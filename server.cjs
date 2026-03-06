@@ -92,10 +92,39 @@ async function getSession() {
   return session;
 }
 
+// ── Security headers ─────────────────────────────────────────────────────────
+function setSecurityHeaders(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+}
+
 // ── Request handler ───────────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url || '/');
   const pathname = parsedUrl.pathname || '/';
+
+  // ── CORS preflight ──────────────────────────────────────────────────────────
+  if (req.method === 'OPTIONS') {
+    setSecurityHeaders(res);
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Max-Age': '86400',
+    });
+    res.end();
+    return;
+  }
+
+  // ── Health check ──────────────────────────────────────────────────────────
+  if (pathname === '/health') {
+    setSecurityHeaders(res);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok', uptime: process.uptime() }));
+    return;
+  }
 
   // ── Proxy handler ──────────────────────────────────────────────────────────
   if (pathname.startsWith('/election-gov-proxy')) {
@@ -115,6 +144,7 @@ const server = http.createServer(async (req, res) => {
         Referer: `${EC_BASE}/MapElectionResult2082.aspx`,
       });
 
+      setSecurityHeaders(res);
       res.writeHead(ecRes.status, {
         'Content-Type': ecRes.contentType || (isImage ? 'image/jpeg' : 'application/json; charset=utf-8'),
         'Access-Control-Allow-Origin': '*',
@@ -123,8 +153,9 @@ const server = http.createServer(async (req, res) => {
       res.end(ecRes.data);
     } catch (err) {
       console.error('[proxy] Error:', err);
+      setSecurityHeaders(res);
       res.writeHead(502, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Proxy error', message: String(err) }));
+      res.end(JSON.stringify({ error: 'Proxy error' }));
     }
     return;
   }
@@ -142,10 +173,12 @@ const server = http.createServer(async (req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
+      setSecurityHeaders(res);
       res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('Not Found');
       return;
     }
+    setSecurityHeaders(res);
     res.writeHead(200, { 'Content-Type': contentType });
     res.end(data);
   });
@@ -155,4 +188,22 @@ server.listen(PORT, () => {
   console.log(`EC Election server running on http://localhost:${PORT}`);
   console.log(`Serving static files from: ${DIST}`);
   console.log(`Proxying /election-gov-proxy/* → ${EC_BASE}`);
+});
+
+// ── Graceful shutdown ─────────────────────────────────────────────────────────
+function shutdown(signal) {
+  console.log(`\n[server] ${signal} received — shutting down gracefully`);
+  server.close(() => {
+    console.log('[server] Closed. Exiting.');
+    process.exit(0);
+  });
+  // Force exit if connections linger beyond 10 s
+  setTimeout(() => process.exit(1), 10_000).unref();
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
+process.on('uncaughtException', (err) => {
+  console.error('[server] Uncaught exception:', err);
+  shutdown('uncaughtException');
 });
