@@ -222,10 +222,11 @@ export async function fetchECElectionData(
 export async function fetchAllCandidates(
   provinceId?: number,
   districtId?: number,
-  constituencyId?: number
+  constituencyId?: number,
+  limit?: number
 ): Promise<ECCandidate[]> {
   const timestamp = new Date().toLocaleTimeString();
-  console.log(`[${timestamp}] 🔍 Fetching all candidates - Province: ${provinceId}, District: ${districtId}, Const: ${constituencyId}`);
+  console.log(`[${timestamp}] 🔍 Fetching all candidates - Province: ${provinceId}, District: ${districtId}, Const: ${constituencyId}, Limit: ${limit}`);
 
   // Fetch district-constituency mapping
   const constituencyCounts = await fetchConstituencyCounts();
@@ -257,6 +258,11 @@ export async function fetchAllCandidates(
     const maxConsts = Math.min(dist.consts, 5); // Limit constituencies per district
     
     for (let constId = 1; constId <= maxConsts; constId++) {
+      // Stop if we've reached the limit
+      if (limit && allCandidates.length >= limit) {
+        console.log(`[${timestamp}] ⚡ Reached limit of ${limit} candidates`);
+        return allCandidates.slice(0, limit);
+      }
       try {
         // Add delay to avoid rate limiting (250ms between requests)
         if (allCandidates.length > 0) {

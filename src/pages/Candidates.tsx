@@ -71,7 +71,11 @@ const Candidates = () => {
         const districtId = selectedDistrict !== "all" ? Number(selectedDistrict) : undefined;
         const constituencyNum = selectedConstituency !== "all" ? Number(selectedConstituency) : undefined;
         
-        const candidatesData = await fetchAllCandidates(provinceId, districtId, constituencyNum);
+        // Show only 8 candidates when no filters are selected
+        const hasFilters = provinceId || districtId || constituencyNum;
+        const limit = hasFilters ? undefined : 8;
+        
+        const candidatesData = await fetchAllCandidates(provinceId, districtId, constituencyNum, limit);
         
         setCandidates(candidatesData);
         setFilteredCandidates(candidatesData);
@@ -238,7 +242,10 @@ const Candidates = () => {
           <AlertCircle className="h-4 w-4 text-blue-600" />
           <AlertTitle className="text-blue-900 font-semibold">सूचना</AlertTitle>
           <AlertDescription className="text-blue-800">
-            सबै उम्मेदवार देखाउनको लागि, कृपया प्रदेश वा जिल्ला छान्नुहोस्। यसले डाटा छिटो लोड गर्न मद्दत गर्छ।
+            {selectedProvince === "all" && selectedDistrict === "all" && selectedConstituency === "all" 
+              ? "८ उम्मेदवार देखाइएको छ। थप उम्मेदवार हेर्न प्रदेश वा जिल्ला छान्नुहोस्।"
+              : "फिल्टर प्रयोग गरिएको छ। सबै उम्मेदवार देखाउनको लागि प्रदेश वा जिल्ला छान्नुहोस्।"
+            }
           </AlertDescription>
         </Alert>
 
@@ -409,10 +416,16 @@ const Candidates = () => {
               <Users className="w-10 h-10 text-slate-400" />
             </div>
             <h3 className="text-xl font-semibold text-slate-700 mb-2">
-              कुनै उम्मेदवार भेटिएन
+              {selectedProvince === "all" && selectedDistrict === "all" && selectedConstituency === "all"
+                ? "उम्मेदवार देखाउनको लागि फिल्टर छान्नुहोस्"
+                : "कुनै उम्मेदवार भेटिएन"
+              }
             </h3>
             <p className="text-slate-500 mb-4">
-              माथिबाट प्रदेश वा जिल्ला छनोट गरेर उम्मेदवार खोज्नुहोस्
+              {selectedProvince === "all" && selectedDistrict === "all" && selectedConstituency === "all"
+                ? "प्रदेश वा जिल्ला छनोट गरेर उम्मेदवार खोज्नुहोस्"
+                : "फिल्टर परिवर्तन गरेर पुन: प्रयास गर्नुहोस्"
+              }
             </p>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
               <AlertCircle className="w-4 h-4" />
