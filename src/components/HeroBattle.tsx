@@ -8,26 +8,51 @@ import {
 } from "@/hooks/useECElectionData";
 import BattleCard from "@/components/BattleCard";
 
-// ── Default: Jhapa-5 (Balendra vs KP Oli) ──────────────────────────────────
-const DEFAULT_DIST = 4;
-const DEFAULT_CONST = 5;
+// ── Featured battles config ──────────────────────────────────────────────────
+const FEATURED_BATTLES = [
+  { dist: 4,  con: 5,  label: "झापा-५ (Jhapa-5)",     subtitle: "Balendra Shah vs KP Sharma Oli",              accentBg: "bg-blue-500",   accentText: "text-blue-500"   },
+  { dist: 15, con: 3,  label: "सप्तरी-३ (Saptari-3)", subtitle: "Amarkant Chaudhary vs Upendra Yadav",          accentBg: "bg-purple-500", accentText: "text-purple-500" },
+  { dist: 15, con: 1,  label: "सप्तरी-१ (Saptari-1)", subtitle: "Pushpa Kumari Chaudhary vs Ramdev Sah",        accentBg: "bg-orange-500", accentText: "text-orange-500" },
+  { dist: 15, con: 4,  label: "सप्तरी-४ (Saptari-4)", subtitle: "Sitaram Sah vs Teju Lal Chaudhary",            accentBg: "bg-teal-500",   accentText: "text-teal-500"   },
+  { dist: 15, con: 2,  label: "सप्तरी-२ (Saptari-2)", subtitle: "Ramji Yadav vs Umesh Kumar Yadav",             accentBg: "bg-rose-500",   accentText: "text-rose-500"   },
+];
 
-// ── Featured battle 2: Saptari-3 (Amarkant Chaudhary vs Upendra Yadav) ──────
-const SAPTARI_DIST = 15;
-const SAPTARI_CONST = 3;
+// ── Featured Battle Section component ───────────────────────────────────────
+function FeaturedBattleSection({
+  dist,
+  con,
+  label,
+  subtitle,
+  accentBg,
+  accentText,
+}: {
+  dist: number;
+  con: number;
+  label: string;
+  subtitle: string;
+  accentBg: string;
+  accentText: string;
+}) {
+  const { data, isLoading } = useECElectionData(dist, con);
+  return (
+    <div className="pt-4 border-t-2 border-slate-200">
+      <div className="flex items-center gap-3 mb-6">
+        <div className={`h-1 w-8 ${accentBg} rounded-full`} />
+        <h2 className="text-xl font-bold text-slate-800">{label}</h2>
+        <span className="text-sm text-slate-500 font-medium">{subtitle}</span>
+      </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[200px]">
+          <Loader2 className={`w-8 h-8 animate-spin ${accentText}`} />
+        </div>
+      ) : data && data.length > 0 ? (
+        data.map((c) => <BattleCard key={c.constituency} electionData={c} />)
+      ) : null}
+    </div>
+  );
+}
 
-// ── Featured battle 3: Saptari-1 (Pushpa Kumari Chaudhary vs Ramdev Sah) ──────
-const SAPTARI1_DIST = 15;
-const SAPTARI1_CONST = 1;
-
-// ── Featured battle 4: Saptari-4 (Sitaram Sah vs Teju Lal Chaudhary) ──────
-const SAPTARI4_DIST = 15;
-const SAPTARI4_CONST = 4;
-
-// ── Featured battle 5: Saptari-2 (Ramji Yadav vs Umesh Kumar Yadav) ──────
-const SAPTARI2_DIST = 15;
-const SAPTARI2_CONST = 2;
-
+// ── Cascading filter Dropdown ─────────────────────────────────────────────────
 function Dropdown<T>({
   label,
   items,
@@ -123,46 +148,20 @@ const HeroBattle = () => {
   >(undefined);
   const [selectedDistrict, setSelectedDistrict] = useState<
     { id: number; name: string; parentId: number } | undefined
-  >({ id: DEFAULT_DIST, name: "झापा", parentId: 1 });
-  const [selectedConst, setSelectedConst] = useState<number | undefined>(DEFAULT_CONST);
+  >(undefined);
+  const [selectedConst, setSelectedConst] = useState<number | undefined>(undefined);
 
   const { data: provinces, isLoading: provLoading } = useProvinces();
   const { data: districts } = useDistricts(selectedProvince?.id);
   const { data: constNums } = useConstituencies(selectedDistrict?.id);
 
-  const distId = selectedDistrict?.id ?? DEFAULT_DIST;
-  const constId = selectedConst ?? DEFAULT_CONST;
+  // Filter-driven query — only fires when both district AND constituency are chosen
+  const { data: electionData, isLoading: filterLoading, isError: filterError, isFetching } =
+    useECElectionData(selectedDistrict?.id, selectedConst);
 
-  const { data: electionData, isLoading, isError, isFetching } = useECElectionData(
-    distId,
-    constId
-  );
+  const isFilterComplete = !!selectedDistrict && !!selectedConst;
 
-  // Second featured battle — Saptari-3
-  const { data: saptariData, isLoading: saptariLoading } = useECElectionData(
-    SAPTARI_DIST,
-    SAPTARI_CONST
-  );
-
-  // Third featured battle — Saptari-1
-  const { data: saptari1Data, isLoading: saptari1Loading } = useECElectionData(
-    SAPTARI1_DIST,
-    SAPTARI1_CONST
-  );
-
-  // Fourth featured battle — Saptari-4
-  const { data: saptari4Data, isLoading: saptari4Loading } = useECElectionData(
-    SAPTARI4_DIST,
-    SAPTARI4_CONST
-  );
-
-  // Fifth featured battle — Saptari-2
-  const { data: saptari2Data, isLoading: saptari2Loading } = useECElectionData(
-    SAPTARI2_DIST,
-    SAPTARI2_CONST
-  );
-
-  // Reset district when province changes
+  // Reset district + constituency when province changes
   const handleProvinceChange = (p: typeof selectedProvince) => {
     setSelectedProvince(p);
     setSelectedDistrict(undefined);
@@ -175,7 +174,8 @@ const HeroBattle = () => {
     setSelectedConst(undefined);
   };
 
-  if (isLoading && !electionData) {
+  // ── dummy block kept so the replacement anchor below still matches ──
+  if (false) {
     return (
       <section id="live" className="scroll-mt-24 pb-12">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -190,7 +190,7 @@ const HeroBattle = () => {
     );
   }
 
-  if (isError || !electionData) {
+  if (false) {
     return (
       <section id="live" className="scroll-mt-24 pb-12">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -209,7 +209,8 @@ const HeroBattle = () => {
 
   return (
     <section id="live" className="scroll-mt-24 space-y-8 pb-12">
-      {/* Header */}
+
+      {/* ── Page header ──────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3 pb-3 border-b-2 border-slate-200">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex-1">
@@ -234,7 +235,7 @@ const HeroBattle = () => {
           </div>
         </div>
 
-        {/* Filter row */}
+        {/* ── Cascading filter: Province → District → Constituency ──────── */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
             Filter:
@@ -251,7 +252,7 @@ const HeroBattle = () => {
             disabled={provLoading}
           />
 
-          {/* District */}
+          {/* District — shows all districts when no province is selected */}
           <Dropdown
             label="All Districts"
             items={districts ?? []}
@@ -261,10 +262,10 @@ const HeroBattle = () => {
             getValue={(d) => d.id}
           />
 
-          {/* Constituency */}
-          {constNums && constNums.length > 0 && (
+          {/* Constituency — only visible once a district is chosen */}
+          {selectedDistrict && constNums && constNums.length > 0 && (
             <Dropdown
-              label="All Constituencies"
+              label="Select Constituency"
               items={constNums}
               selected={selectedConst}
               onSelect={(n) => setSelectedConst(n)}
@@ -275,90 +276,83 @@ const HeroBattle = () => {
         </div>
       </div>
 
-      {/* Results */}
-      {electionData.length > 0 ? (
-        electionData.map((c) => (
-          <BattleCard key={c.constituency} electionData={c} />
-        ))
-      ) : (
-        <div className="text-center py-16 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300">
-          <p className="text-lg text-slate-500 font-medium">
-            No data available for the selected filter
+      {/* ── Filter-driven result card ─────────────────────────────────────── */}
+      {!isFilterComplete ? (
+        /* Placeholder: guide user to pick all three levels */
+        <div className="flex flex-col items-center justify-center py-16 bg-gradient-to-br from-blue-50 to-slate-100 rounded-3xl border-2 border-dashed border-blue-200">
+          <MapPin className="w-10 h-10 text-blue-300 mb-3" />
+          <h3 className="text-lg font-bold text-slate-700 mb-1">
+            Select a Constituency to View Results
+          </h3>
+          <p className="text-sm text-slate-500 mb-5 text-center max-w-xs">
+            Use the filters above to drill down and see the top two leading candidates for any constituency.
           </p>
+          {/* Progress pills */}
+          <div className="flex items-center gap-2 text-xs">
+            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium ${selectedProvince ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${selectedProvince ? "bg-green-500" : "bg-slate-400"}`} />
+              Province
+            </span>
+            <span className="text-slate-300">→</span>
+            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium ${selectedDistrict ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${selectedDistrict ? "bg-green-500" : "bg-slate-400"}`} />
+              District
+            </span>
+            <span className="text-slate-300">→</span>
+            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium ${selectedConst ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${selectedConst ? "bg-green-500" : "bg-slate-400"}`} />
+              Constituency
+            </span>
+          </div>
         </div>
+      ) : filterLoading ? (
+        /* Loading spinner while fetching selected constituency */
+        <div className="flex items-center justify-center min-h-[300px]">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+            <p className="text-lg font-semibold text-slate-500">
+              Loading results for {selectedDistrict?.name} – Constituency {selectedConst}…
+            </p>
+          </div>
+        </div>
+      ) : filterError || !electionData || electionData.length === 0 ? (
+        /* Error / empty state */
+        <div className="flex flex-col items-center justify-center py-12 bg-red-50 rounded-2xl border border-red-200 gap-2">
+          <p className="text-red-600 font-semibold">
+            No data found for {selectedDistrict?.name} – Constituency {selectedConst}
+          </p>
+          <p className="text-sm text-slate-500">Please try a different constituency.</p>
+        </div>
+      ) : (
+        /* ✅ Show the BattleCard for the selected constituency (top-2 candidates) */
+        <>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-1 w-8 bg-blue-600 rounded-full" />
+            <h2 className="text-xl font-bold text-slate-800">
+              {selectedDistrict?.name} – Constituency {selectedConst}
+            </h2>
+            <span className="text-xs font-semibold text-white bg-blue-600 px-2 py-0.5 rounded-full uppercase tracking-wide">
+              Selected
+            </span>
+          </div>
+          {electionData.map((c) => (
+            <BattleCard key={c.constituency} electionData={c} />
+          ))}
+        </>
       )}
 
-      {/* Featured battle 2: Saptari-3 */}
-      <div className="pt-4 border-t-2 border-slate-200">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-1 w-8 bg-purple-500 rounded-full" />
-          <h2 className="text-xl font-bold text-slate-800">सप्तरी-३ (Saptari-3)</h2>
-          <span className="text-sm text-slate-500 font-medium">Amarkant Chaudhary vs Upendra Yadav</span>
-        </div>
-        {saptariLoading ? (
-          <div className="flex items-center justify-center min-h-[200px]">
-            <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-          </div>
-        ) : saptariData && saptariData.length > 0 ? (
-          saptariData.map((c) => (
-            <BattleCard key={c.constituency} electionData={c} />
-          ))
-        ) : null}
-      </div>
-
-      {/* Featured battle 3: Saptari-1 */}
-      <div className="pt-4 border-t-2 border-slate-200">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-1 w-8 bg-orange-500 rounded-full" />
-          <h2 className="text-xl font-bold text-slate-800">सप्तरी-१ (Saptari-1)</h2>
-          <span className="text-sm text-slate-500 font-medium">Pushpa Kumari Chaudhary vs Ramdev Sah</span>
-        </div>
-        {saptari1Loading ? (
-          <div className="flex items-center justify-center min-h-[200px]">
-            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-          </div>
-        ) : saptari1Data && saptari1Data.length > 0 ? (
-          saptari1Data.map((c) => (
-            <BattleCard key={c.constituency} electionData={c} />
-          ))
-        ) : null}
-      </div>
-
-      {/* Featured battle 4: Saptari-4 */}
-      <div className="pt-4 border-t-2 border-slate-200">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-1 w-8 bg-teal-500 rounded-full" />
-          <h2 className="text-xl font-bold text-slate-800">सप्तरी-४ (Saptari-4)</h2>
-          <span className="text-sm text-slate-500 font-medium">Sitaram Sah vs Teju Lal Chaudhary vs Wabi Singh</span>
-        </div>
-        {saptari4Loading ? (
-          <div className="flex items-center justify-center min-h-[200px]">
-            <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
-          </div>
-        ) : saptari4Data && saptari4Data.length > 0 ? (
-          saptari4Data.map((c) => (
-            <BattleCard key={c.constituency} electionData={c} />
-          ))
-        ) : null}
-      </div>
-
-      {/* Featured battle 5: Saptari-2 */}
-      <div className="pt-4 border-t-2 border-slate-200">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-1 w-8 bg-rose-500 rounded-full" />
-          <h2 className="text-xl font-bold text-slate-800">सप्तरी-२ (Saptari-2)</h2>
-          <span className="text-sm text-slate-500 font-medium">Ramji Yadav vs Umesh Kumar Yadav vs Mohammad Ziaul Rahman vs Ram Kumar Yadav</span>
-        </div>
-        {saptari2Loading ? (
-          <div className="flex items-center justify-center min-h-[200px]">
-            <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
-          </div>
-        ) : saptari2Data && saptari2Data.length > 0 ? (
-          saptari2Data.map((c) => (
-            <BattleCard key={c.constituency} electionData={c} />
-          ))
-        ) : null}
-      </div>
+      {/* ── Featured battles (always shown below) ──────────────────────── */}
+      {FEATURED_BATTLES.map((battle) => (
+        <FeaturedBattleSection
+          key={`${battle.dist}-${battle.con}`}
+          dist={battle.dist}
+          con={battle.con}
+          label={battle.label}
+          subtitle={battle.subtitle}
+          accentBg={battle.accentBg}
+          accentText={battle.accentText}
+        />
+      ))}
     </section>
   );
 };

@@ -54,7 +54,8 @@ export function useConstituencies(distId?: number) {
 export function useECElectionData(distId?: number, constId?: number) {
   return useQuery({
     queryKey: ["ec-election-data", distId, constId],
-    queryFn: () => fetchECElectionData(distId ?? 4, constId ?? 5),
+    queryFn: () => fetchECElectionData(distId!, constId!),
+    enabled: !!distId && !!constId,
     refetchInterval: POLLING_INTERVAL,
     staleTime: 10000,
     gcTime: 300000,
