@@ -20,6 +20,9 @@ export interface Candidate {
   districtId?: number;
   districtName?: string;
   constituencyId?: string;
+  isElected?: boolean;
+  remarks?: string;
+  remarksNepali?: string;
 }
 
 export interface ElectionData {

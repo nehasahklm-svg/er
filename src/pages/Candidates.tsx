@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, MapPin, GraduationCap, Calendar, Users, Filter, AlertCircle } from "lucide-react";
+import { User, MapPin, GraduationCap, Calendar, Users, Filter, AlertCircle, Award } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AdPopup from "@/components/AdPopup";
@@ -334,6 +334,14 @@ const Candidates = () => {
                     <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-slate-100">
                       {candidate.Age} वर्ष
                     </Badge>
+
+                    {/* Elected Badge */}
+                    {(candidate.RemarksNep === 'निर्वाचित' || candidate.Remarks?.toLowerCase().includes('elected')) && (
+                      <div className="mt-2 inline-flex items-center gap-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-lg shadow-md">
+                        <Award className="w-3.5 h-3.5" />
+                        <span className="text-xs font-bold">{candidate.RemarksNep || 'निर्वाचित'}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Party Section */}

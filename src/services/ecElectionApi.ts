@@ -51,6 +51,8 @@ export interface ECCandidate {
   CastedVote: number;
   TotalVoters: number;
   Rank: string;
+  Remarks?: string;
+  RemarksNep?: string;
   DOB?: string;
   CTZDIST?: string;
   FATHER_NAME?: string;
@@ -149,6 +151,9 @@ export async function fetchHORResults(distId: number, constId: number): Promise<
 // ─── Data transform ───────────────────────────────────────────────────────────
 
 function transformECCandidate(ec: ECCandidate): Candidate {
+  // Check if candidate is elected based on remarks
+  const isElected = ec.RemarksNep === 'निर्वाचित' || ec.Remarks?.toLowerCase().includes('elected');
+  
   return {
     id: String(ec.CandidateID),
     name: ec.CandidateName,
@@ -170,6 +175,9 @@ function transformECCandidate(ec: ECCandidate): Candidate {
     districtId: ec.DistrictCd,
     districtName: ec.DistrictName,
     constituencyId: ec.SCConstID,
+    isElected,
+    remarks: ec.Remarks,
+    remarksNepali: ec.RemarksNep,
   };
 }
 

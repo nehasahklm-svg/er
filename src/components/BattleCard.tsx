@@ -21,8 +21,29 @@ const BattleCard = ({ electionData }: BattleCardProps) => {
   const PCT_2 = ((VOTES_2 / TOTAL) * 100).toFixed(1);
   const VOTE_DIFF = Math.abs(VOTES_1 - VOTES_2);
   const LEADING = VOTES_1 > VOTES_2 ? candidate1.name : candidate2.name;
+  
+  // Check if any candidate is elected
+  const isElected = candidates.some(c => c.isElected);
+  
+  // Debug logging
+  console.log('BattleCard Debug:', {
+    constituency: electionData.constituency,
+    percentageCounted: electionData.percentageCounted,
+    candidates: candidates.map(c => ({
+      name: c.name,
+      isElected: c.isElected,
+      remarksNepali: c.remarksNepali,
+      remarks: c.remarks
+    })),
+    anyElected: isElected,
+    showCompleted: isElected
+  });
 
   const handleShare = async () => {
+    const countingStatus = isElected
+      ? "✅ Counting Completed (गणना सम्पन्न)"
+      : `⏳ Counting: ${electionData.percentageCounted}% Complete`;
+
     const shareText = `🗳️ ${electionData.constituency.toUpperCase()} - LIVE RESULTS
 
 👑 LEADING: ${LEADING}
@@ -39,7 +60,7 @@ ${VOTES_2 > VOTES_1 ? '🥇' : '🥈'} ${candidate2.name}
 ━━━━━━━━━━━━━━━━━━━━━
 📈 Vote Difference: ${VOTE_DIFF.toLocaleString()}
 📊 Total Votes: ${TOTAL.toLocaleString()}
-⏳ Counting: ${electionData.percentageCounted}% Complete
+${countingStatus}
 
 🌐 https://www.kpvsbalen.tech/
 🚀 Developed by Wanted Soft`;
@@ -70,7 +91,9 @@ ${VOTES_2 > VOTES_1 ? '🥇' : '🥈'} ${candidate2.name}
             </div>
             <div className="hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/20">
               <Award className="w-4 h-4 text-yellow-300" />
-              <span className="text-xs font-semibold text-white">Leading: {LEADING}</span>
+              <span className="text-xs font-semibold text-white">
+                {isElected ? `Winner: ${LEADING}` : `Leading: ${LEADING}`}
+              </span>
             </div>
           </div>
           
@@ -100,13 +123,32 @@ ${VOTES_2 > VOTES_1 ? '🥇' : '🥈'} ${candidate2.name}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative flex items-center justify-center">
-              <div className="w-5 h-5 rounded-full border-2 border-white/80 border-t-transparent animate-spin" />
-            </div>
+            {isElected ? (
+              <div className="relative flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+            ) : (
+              <div className="relative flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full border-2 border-white/80 border-t-transparent animate-spin" />
+              </div>
+            )}
             <div>
-              <p className="text-[10px] text-white/70 uppercase tracking-wider font-semibold">Counting Progress</p>
+              <p className="text-[10px] text-white/70 uppercase tracking-wider font-semibold">
+                {isElected ? 'गणना स्थिति' : 'Counting Progress'}
+              </p>
               <div className="flex items-baseline gap-2">
-                <p className="text-lg font-bold text-white font-mono">{electionData.percentageCounted}% Complete</p>
+                {isElected ? (
+                  <div className="flex items-center gap-2">
+                    <p className="text-lg font-bold text-green-300 font-mono">गणना सम्पन्न</p>
+                    <span className="text-xs bg-green-500/30 text-green-100 px-2 py-0.5 rounded-full font-semibold">Completed</span>
+                  </div>
+                ) : (
+                  <p className="text-lg font-bold text-white font-mono">{electionData.percentageCounted}% Complete</p>
+                )}
               </div>
               <p className="text-[10px] text-white/90 font-medium font-mono mt-0.5">{electionData.votesCounted.toLocaleString()} / {electionData.totalVotesCast.toLocaleString()}</p>
             </div>
@@ -154,6 +196,12 @@ ${VOTES_2 > VOTES_1 ? '🥇' : '🥈'} ${candidate2.name}
                 </p>
                 <h3 className="text-lg font-bold text-slate-900 leading-tight truncate">{candidate1.name}</h3>
                 <p className="text-xs text-slate-600 truncate">{candidate1.nameNepali}</p>
+                {candidate1.isElected && (
+                  <div className="mt-2 inline-flex items-center gap-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-lg shadow-md">
+                    <Award className="w-3.5 h-3.5" />
+                    <span className="text-xs font-bold">{candidate1.remarksNepali || 'निर्वाचित'}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -215,6 +263,12 @@ ${VOTES_2 > VOTES_1 ? '🥇' : '🥈'} ${candidate2.name}
                 </p>
                 <h3 className="text-lg font-bold text-slate-900 leading-tight truncate">{candidate2.name}</h3>
                 <p className="text-xs text-slate-600 truncate">{candidate2.nameNepali}</p>
+                {candidate2.isElected && (
+                  <div className="mt-2 inline-flex items-center gap-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-lg shadow-md">
+                    <Award className="w-3.5 h-3.5" />
+                    <span className="text-xs font-bold">{candidate2.remarksNepali || 'निर्वाचित'}</span>
+                  </div>
+                )}
               </div>
             </div>
 
