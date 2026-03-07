@@ -154,7 +154,7 @@ const Proportional = () => {
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp className={`w-4 h-4 ${isTopParty ? 'text-yellow-600' : 'text-blue-500'}`} />
                       <p className={`text-xl font-black font-mono ${isTopParty ? 'text-yellow-700' : 'text-blue-600'}`}>
-                        {party.votes.toLocaleString()}
+                        {(party.votes || 0).toLocaleString()}
                       </p>
                     </div>
                     
