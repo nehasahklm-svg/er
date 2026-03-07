@@ -277,35 +277,7 @@ const HeroBattle = () => {
       </div>
 
       {/* ── Filter-driven result card ─────────────────────────────────────── */}
-      {!isFilterComplete ? (
-        /* Placeholder: guide user to pick all three levels */
-        <div className="flex flex-col items-center justify-center py-16 bg-gradient-to-br from-blue-50 to-slate-100 rounded-3xl border-2 border-dashed border-blue-200">
-          <MapPin className="w-10 h-10 text-blue-300 mb-3" />
-          <h3 className="text-lg font-bold text-slate-700 mb-1">
-            Select a Constituency to View Results
-          </h3>
-          <p className="text-sm text-slate-500 mb-5 text-center max-w-xs">
-            Use the filters above to drill down and see the top two leading candidates for any constituency.
-          </p>
-          {/* Progress pills */}
-          <div className="flex items-center gap-2 text-xs">
-            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium ${selectedProvince ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${selectedProvince ? "bg-green-500" : "bg-slate-400"}`} />
-              Province
-            </span>
-            <span className="text-slate-300">→</span>
-            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium ${selectedDistrict ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${selectedDistrict ? "bg-green-500" : "bg-slate-400"}`} />
-              District
-            </span>
-            <span className="text-slate-300">→</span>
-            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium ${selectedConst ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${selectedConst ? "bg-green-500" : "bg-slate-400"}`} />
-              Constituency
-            </span>
-          </div>
-        </div>
-      ) : filterLoading ? (
+      {!isFilterComplete ? null : filterLoading ? (
         /* Loading spinner while fetching selected constituency */
         <div className="flex items-center justify-center min-h-[300px]">
           <div className="flex flex-col items-center gap-4">
@@ -341,8 +313,8 @@ const HeroBattle = () => {
         </>
       )}
 
-      {/* ── Featured battles (always shown below) ──────────────────────── */}
-      {FEATURED_BATTLES.map((battle) => (
+      {/* ── Featured battles (only when no filter is active) ──────────── */}
+      {!isFilterComplete && FEATURED_BATTLES.map((battle) => (
         <FeaturedBattleSection
           key={`${battle.dist}-${battle.con}`}
           dist={battle.dist}
