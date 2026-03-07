@@ -51,7 +51,8 @@ Track real-time updates.
 
           {/* Center Title */}
           <div className="absolute left-1/2 -translate-x-1/2 text-center whitespace-nowrap">
-            <h1 className="font-bold text-sm sm:text-xl text-slate-900 tracking-tight leading-none">
+            <h1 className="font-bold text-sm sm:text-xl text-slate-900 tracking-tight leading-none flex items-center gap-2 justify-center">
+              <span className="text-lg sm:text-2xl">🇳🇵</span>
               Election Results 2082
             </h1>
             <p className="text-[10px] text-slate-500 font-medium mt-0.5 hidden xs:block sm:block">Real-time Coverage</p>
