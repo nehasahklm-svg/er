@@ -314,7 +314,7 @@ const HeroBattle = () => {
       )}
 
       {/* ── Featured battles (only when no filter is active) ──────────── */}
-      {!isFilterComplete && FEATURED_BATTLES.map((battle) => (
+      {!isFilterComplete && FEATURED_BATTLES.slice(0, 1).map((battle) => (
         <FeaturedBattleSection
           key={`${battle.dist}-${battle.con}`}
           dist={battle.dist}
