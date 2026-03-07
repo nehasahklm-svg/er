@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AdPopup from "@/components/AdPopup";
 import { Card } from "@/components/ui/card";
 import { Users, TrendingUp } from "lucide-react";
 import { fetchProportionalData, type ProportionalPartyData } from "@/services/proportionalApi";
@@ -38,6 +39,7 @@ const Proportional = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+        <AdPopup />
         <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
@@ -53,6 +55,7 @@ const Proportional = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+        <AdPopup />
         <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center max-w-md mx-auto p-8">
@@ -76,6 +79,7 @@ const Proportional = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+      <AdPopup />
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 py-8">

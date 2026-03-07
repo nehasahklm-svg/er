@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { User, MapPin, GraduationCap, Calendar, Users, Filter, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AdPopup from "@/components/AdPopup";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -128,6 +129,7 @@ const Candidates = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <AdPopup />
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
