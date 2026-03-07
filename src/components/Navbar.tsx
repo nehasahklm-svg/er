@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Vote, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [time, setTime] = useState(new Date());
   const { toast } = useToast();
+  const location = useLocation();
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -41,11 +43,37 @@ Track real-time updates.
         <div className="relative flex items-center justify-between h-16 sm:h-20">
           {/* Logo & Brand - Left */}
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg" style={{ backgroundColor: '#084b92' }}>
-                <Vote className="w-5 h-5 text-white" />
+            <Link to="/">
+              <div className="relative">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg" style={{ backgroundColor: '#084b92' }}>
+                  <Vote className="w-5 h-5 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse" />
               </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse" />
+            </Link>
+            
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center gap-2 ml-4">
+              <Link 
+                to="/" 
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  location.pathname === '/' 
+                    ? 'bg-blue-500 text-white shadow-md' 
+                    : 'text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                गृहपृष्ठ
+              </Link>
+              <Link 
+                to="/proportional" 
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  location.pathname === '/proportional' 
+                    ? 'bg-blue-500 text-white shadow-md' 
+                    : 'text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                समानुपातिक
+              </Link>
             </div>
           </div>
 
