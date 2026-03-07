@@ -13,6 +13,13 @@ export interface Candidate {
   background: string;
   symbolName: string;
   symbolCode: number;
+  gender?: string;
+  address?: string;
+  provinceId?: number;
+  provinceName?: string;
+  districtId?: number;
+  districtName?: string;
+  constituencyId?: string;
 }
 
 export interface ElectionData {

@@ -74,6 +74,16 @@ Track real-time updates.
               >
                 समानुपातिक
               </Link>
+              <Link 
+                to="/candidates" 
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  location.pathname === '/candidates' 
+                    ? 'bg-blue-500 text-white shadow-md' 
+                    : 'text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                उम्मेदवार
+              </Link>
             </div>
           </div>
 
