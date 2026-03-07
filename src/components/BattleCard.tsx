@@ -1,11 +1,14 @@
 import { Share2, TrendingUp, Award, Users } from "lucide-react";
 import type { ElectionData } from "@/types/election";
+import { useToast } from "@/hooks/use-toast";
 
 interface BattleCardProps {
   electionData: ElectionData;
 }
 
 const BattleCard = ({ electionData }: BattleCardProps) => {
+  const { toast } = useToast();
+  
   // Extract candidate data
   const candidates = electionData.candidates;
   const candidate1 = candidates[0];
@@ -18,6 +21,43 @@ const BattleCard = ({ electionData }: BattleCardProps) => {
   const PCT_2 = ((VOTES_2 / TOTAL) * 100).toFixed(1);
   const VOTE_DIFF = Math.abs(VOTES_1 - VOTES_2);
   const LEADING = VOTES_1 > VOTES_2 ? candidate1.name : candidate2.name;
+
+  const handleShare = async () => {
+    const shareText = `🗳️ ${electionData.constituency.toUpperCase()} - LIVE RESULTS
+
+👑 LEADING: ${LEADING}
+━━━━━━━━━━━━━━━━━━━━━
+
+${VOTES_1 > VOTES_2 ? '🥇' : '🥈'} ${candidate1.name}
+📊 ${VOTES_1.toLocaleString()} votes (${PCT_1}%)
+🏛️ ${candidate1.party}
+
+${VOTES_2 > VOTES_1 ? '🥇' : '🥈'} ${candidate2.name}
+📊 ${VOTES_2.toLocaleString()} votes (${PCT_2}%)
+🏛️ ${candidate2.party}
+
+━━━━━━━━━━━━━━━━━━━━━
+📈 Vote Difference: ${VOTE_DIFF.toLocaleString()}
+📊 Total Votes: ${TOTAL.toLocaleString()}
+⏳ Counting: ${electionData.percentageCounted}% Complete
+
+🌐 https://www.kpvsbalen.tech/
+🚀 Developed by Wanted Soft`;
+
+    try {
+      await navigator.clipboard.writeText(shareText);
+      toast({
+        title: "Results copied!",
+        description: "Election results copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="relative w-full overflow-visible bg-white rounded-3xl shadow-lg border border-slate-200 mb-6 sm:mb-12">
@@ -34,7 +74,10 @@ const BattleCard = ({ electionData }: BattleCardProps) => {
             </div>
           </div>
           
-          <button className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl border border-white/30 transition-all">
+          <button 
+            onClick={handleShare}
+            className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl border border-white/30 transition-all active:scale-95"
+          >
             <Share2 className="w-4 h-4 text-white" />
             <span className="text-sm font-medium text-white hidden sm:inline">Share</span>
           </button>

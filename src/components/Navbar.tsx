@@ -1,13 +1,39 @@
 import { useState, useEffect } from "react";
-import { Vote } from "lucide-react";
+import { Vote, Share2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [time, setTime] = useState(new Date());
+  const { toast } = useToast();
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleShare = async () => {
+    const shareText = `🚨 LIVE Election Counting Results 🗳️
+Track real-time updates.
+
+🌐 https://www.kpvsbalen.tech/
+
+⚡ Fast • Accurate • Live Updates
+🚀 Developed by Wanted Soft`;
+
+    try {
+      await navigator.clipboard.writeText(shareText);
+      toast({
+        title: "Link copied!",
+        description: "Share message copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-slate-200 shadow-sm">
@@ -33,6 +59,16 @@ const Navbar = () => {
 
           {/* Live Status & Stats - Right */}
           <div className="flex items-center gap-4">
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
+              title="Share Link"
+            >
+              <Share2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+
             {/* Live Indicator */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-red-50 to-pink-50 border border-red-200">
