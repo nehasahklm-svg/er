@@ -3,7 +3,7 @@
  * Handles proxying requests to result.election.gov.np with session management
  */
 
-const https = require('https');
+import https from 'https';
 
 const EC_BASE = 'https://result.election.gov.np';
 const SESSION_TTL = 8 * 60 * 1000; // 8 minutes
@@ -76,7 +76,7 @@ async function getSession() {
 /**
  * Main handler for Vercel serverless function
  */
-module.exports = async (req, res) => {
+export default async (req, res) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     res.status(200).end();
